@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Study Buddy 2.0 | Personalized CS Learning Platform</title>
+    <meta name="description" content="AI Study Buddy 2.0 - Personalized computer science study platform powered by Google Gemini. AI Tutor, dynamic quizzes, weak-topic detection, study planner, notes & spaced-repetition flashcards.">
+
+    <link rel="stylesheet" href="bt.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- 1. LOGIN SCREEN -->
+    <div class="login-screen" id="login-screen">
+        <div class="login-card">
+            <div class="login-logo">🤖</div>
+
+            <h1>CS Study Buddy 2.0</h1>
+            <p>Your personalized AI-powered learning companion</p>
+
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        placeholder="Enter your username (e.g. admin)"
+                        value="admin"
+                        required
+                    >
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Enter password (e.g. 1234)"
+                        value="1234"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="login-btn">
+                    Launch Learning Dashboard 🚀
+                </button>
+
+                <div class="login-note">
+                    Demo credentials: username = <b>admin</b>, password = <b>1234</b>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APPLICATION CONTAINER -->
+    <div class="app hidden" id="app">
+
+        <!-- Mobile overlay backdrop -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-top-row">
+                <div class="brand">
+                    <div class="brand-icon">🤖</div>
+                    <div>
+                        <h2>Study Buddy</h2>
+                        <p class="brand-sub">Platform 2.0</p>
+                    </div>
+                </div>
+                <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close menu">✕</button>
+            </div>
+
+            <!-- 10 Core Navigation Items -->
+            <nav class="menu">
+                <a href="#" class="menu-item active" data-view="dashboard" onclick="switchView('dashboard', this)">🏠 Dashboard</a>
+                <a href="#" class="menu-item" data-view="chat" onclick="switchView('chat', this)">💬 AI Tutor</a>
+                <a href="#" class="menu-item" data-view="topics" onclick="switchView('topics', this)">📚 Subjects</a>
+                <a href="#" class="menu-item" data-view="quiz" onclick="switchView('quiz', this)">📝 AI Quiz</a>
+                <a href="#" class="menu-item" data-view="notes" onclick="switchView('notes', this)">📄 My Notes</a>
+                <a href="#" class="menu-item" data-view="flashcards" onclick="switchView('flashcards', this)">🧠 Flashcards</a>
+                <a href="#" class="menu-item" data-view="planner" onclick="switchView('planner', this)">📅 Study Planner</a>
+                <a href="#" class="menu-item" data-view="focus" onclick="switchView('focus', this)">⏱️ Focus Mode</a>
+                <a href="#" class="menu-item" data-view="progress" onclick="switchView('progress', this)">📊 Progress</a>
+                <a href="#" class="menu-item" data-view="settings" onclick="switchView('settings', this)">⚙️ Settings</a>
+            </nav>
+
+            <div class="sidebar-card">
+                <h3>Quick Tutor Queries</h3>
+                <button class="topic-btn" onclick="askTopic('Explain SQL Subqueries with practical examples')">📊 SQL Subqueries</button>
+                <button class="topic-btn" onclick="askTopic('Teach me Context Free Grammar and Ambiguity')">🔤 CFG Parsing</button>
+                <button class="topic-btn" onclick="askTopic('Explain Process Synchronization & Semaphores')">🖥️ OS Semaphores</button>
+                <button class="topic-btn" onclick="askTopic('Explain Dijkstra Shortest Path algorithm with code')">🛣️ Graph Algorithms</button>
+                <button class="topic-btn" onclick="askTopic('Teach me Python decorators step-by-step')">🐍 Python Decorators</button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-area">
+
+            <!-- TOPBAR HEADER -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <div>
+                        <h1 id="topbar-heading">AI Study Buddy 2.0</h1>
+                        <p id="topbar-subheading">Personalized AI Computer Science & Engineering Platform</p>
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+                    <div class="status" id="connection-status">● Gemini Flash AI Active</div>
+
+                    <div class="profile-container">
+                        <div class="profile-avatar" onclick="toggleProfileMenu()" title="Open Profile Menu">
+                            <span id="profile-initial">A</span>
+                        </div>
+
+                        <div class="profile-dropdown hidden" id="profile-dropdown">
+                            <div class="profile-header">
+                                <div class="profile-avatar-large">
+                                    <span id="profile-initial-large">A</span>
+                                </div>
+                                <div class="profile-details">
+                                    <h4 id="profile-username">Admin</h4>
+                                    <p id="profile-email">admin@csstudybuddy.edu</p>
+                                </div>
+                            </div>
+                            <button class="profile-edit" onclick="openEditProfile()">✏️ Edit Profile</button>
+                            <button class="profile-logout" onclick="logout()">🚪 Logout</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- SECTION 1: DASHBOARD (Default Landing View) -->
+            <section class="view-section" id="dashboard-view">
+                <div class="dash-welcome-banner">
+                    <div>
+                        <h2 id="dash-greeting">Good morning, Scholar 👋</h2>
+                        <p class="dash-date-line"><span id="dash-date">Loading date...</span> • <span id="dash-goal-text">Target: CS Exams</span></p>
+                    </div>
+                    <div class="dash-quick-actions">
+                        <button class="dash-hero-btn" onclick="switchView('quiz')">📝 Quick Quiz</button>
+                        <button class="dash-hero-btn secondary" onclick="switchView('focus')">⏱️ Focus Session</button>
+                    </div>
+                </div>
+
+                <!-- 6 Dynamic Statistics Cards -->
+                <div class="dash-stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🔥</div>
+                        <div class="stat-meta">
+                            <div class="stat-value" id="dash-streak-val">3 Days</div>
+                            <div class="stat-label">Study Streak</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-meta">
+                            <div class="stat-value" id="dash-time-val">1h 15m</div>
+                            <div class="stat-label">Total Study Time</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-meta">
+                            <div class="stat-value" id="dash-progress-val">76%</div>
+                            <div class="stat-label">Overall Mastery</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-meta">
+                            <div class="stat-value" id="dash-xp-val">150 XP</div>
+                            <div class="stat-label" id="dash-level-val">Level 1</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">📚</div>
+                        <div class="stat-meta">
+                            <div class="stat-value" id="dash-topics-val">9 Subjects</div>
+                            <div class="stat-label">Curriculum Scope</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">📝</div>
+                        <div class="stat-meta">
+                            <div class="stat-value" id="dash-quizzes-val">0</div>
+                            <div class="stat-label">Quizzes Completed</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Two Column Dashboard Layout: Subject Progress + AI Coach -->
+                <div class="dash-content-row">
+                    <!-- Subject Progress Bars (Real Data) -->
+                    <div class="panel-card flex-1">
+                        <div class="panel-header-row">
+                            <h3>📊 Subject Mastery Progress</h3>
+                            <button class="link-btn" onclick="switchView('progress')">View All →</button>
+                        </div>
+                        <div class="progress-bars-container" id="dash-subject-bars">
+                            <!-- Injected dynamically via dashboard.js -->
+                        </div>
+                    </div>
+
+                    <!-- AI Study Coach Recommendation Card -->
+                    <div class="panel-card flex-1" id="dash-coach-card">
+                        <div class="coach-header">
+                            <div class="coach-avatar">🤖</div>
+                            <div>
+                                <h3>AI Study Coach</h3>
+                                <p class="coach-sub">Personalized Learning Recommendation</p>
+                            </div>
+                        </div>
+                        <div class="coach-body">
+                            <h4 id="dash-coach-title">Analyzing your recent performance...</h4>
+                            <p id="dash-coach-text">Reviewing your quiz results, completed topics, and target goals to recommend your next step.</p>
+                        </div>
+                        <button class="login-btn coach-action-btn" id="dash-coach-btn">
+                            🚀 Start Recommended Lesson
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: AI TUTOR (Enhanced Chat) -->
+            <section class="view-section hidden chat-section" id="chat-view">
+                <div class="chat-box" id="chat-box">
+                    <div class="message-row bot-row">
+                        <div class="message bot-message">
+                            Hello 👋 I'm your upgraded <strong>AI Study Buddy 2.0</strong> powered by Google Gemini! 🚀<br><br>
+                            I can explain complex CS topics step-by-step, generate code snippets, provide hints, simplify tough concepts, or test you with practice problems.<br><br>
+                            <em>Try asking me about SQL JOINs, Operating System Deadlocks, or Dijkstra's Algorithm!</em>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-section">
+                    <input
+                        type="text"
+                        id="user-input"
+                        placeholder="Ask anything about Computer Science (e.g., 'Explain B-Trees vs B+ Trees with code')..."
+                    >
+                    <button id="send-btn" onclick="sendMessage()" title="Send Message">
+                        ➤
+                    </button>
+                </div>
+            </section>
+
+            <!-- SECTION 3: TOPICS CURRICULUM -->
+            <section class="view-section hidden" id="topics-view">
+                <div class="view-header">
+                    <h2>📚 Core Computer Science Curriculum</h2>
+                    <p>Select any subject below to explore lessons or launch dedicated AI quizzes.</p>
+                </div>
+                <div class="topics-grid">
+                    <div class="topic-card">
+                        <div class="topic-icon">📊</div>
+                        <h3>SQL & Relational Databases</h3>
+                        <p>DDL, DML, Relational Algebra, Complex JOINs, Subqueries, Aggregations, Indexing & Normalization.</p>
+                        <div class="card-btn-row">
+                            <button class="topic-action-btn" onclick="askTopic('Teach me SQL JOINs and Aggregations with examples')">💬 Learn</button>
+                            <button class="topic-action-btn" onclick="startQuiz('SQL')">📝 Quiz</button>
+                        </div>
+                    </div>
+
+                    <div class="topic-card">
+                        <div class="topic-icon">🗄️</div>
+                        <h3>Database Management (DBMS)</h3>
+                        <p>ACID Transactions, Concurrency Control, Two-Phase Locking, ER Modeling, B+ Trees.</p>
+                        <div class="card-btn-row">
+                            <button class="topic-action-btn" onclick="askTopic('Explain DBMS ACID properties and Concurrency Control')">💬 Learn</button>
+                            <button class="topic-action-btn" onclick="startQuiz('DBMS')">📝 Quiz</button>
+                        </div>
+                    </div>
+
+                    <div class="topic-card">
+                        <div class="topic-icon">🐍</div>
+                        <h3>Python Programming</h3>
+                        <p>Data types, List Comprehensions, Decorators, Generators, OOP, AsyncIO, Memory model.</p>
+                        <div class="card-btn-row">
+                            <button class="topic-action-btn" onclick="askTopic('Explain Python OOP and Decorators with examples')">💬 Learn</button>
+                            <button class="topic-action-btn" onclick="startQuiz('Python')">📝 Quiz</button>
+                        </div>
+                    </div>
+
+                    <div class="topic-card">
+                        <div class="topic-icon">☕</div>
+                        <h3>Java Programming</h3>
+                        <p>JVM Internals, Garbage Collection, Multithreading, Generics, Stream API, Design Patterns.</p>
+                        <div class="card-btn-row">
+                            <button class="topic-action-btn" onclick="askTopic('Explain Java Multithreading and Memory Model')">💬 Learn</button>
+                            <button class="topic-action-btn" onclick="startQuiz('Java')">📝 Quiz</button>
+                        </div>
+                    </div>
+
+                    <div class="topic-card">
+                        <div class="topic-icon">🌲</div>
+                        <h3>Data Structures & Algorithms</h3>
+                        <p>Asymptotic Analysis, Trees, Heaps, Graph traversals, Dynamic Programming, Greedy approaches.</p>
+                        <div class="card-btn-row">
+                            <button class="topic-action-btn" onclick="askTopic('Explain Dynamic Programming memoization vs tabulation')">💬 Learn</button>
+                            <button class="topic-action-btn" onclick="startQuiz('Data Structures & Algorithms')">📝 Quiz</button>
+                        </div>
+                    </div>
+
+                    <div class="topic-card">
+                        <div class="topic-icon">🖥️</div>
+                        <h3>Operating Systems</h3>
+                        <p>Process Scheduling, Deadlocks, Virtual Memory, Paging, Page Faults, Synchronization.</p>
+                        <div class="card-btn-row">
+                            <button class="topic-action-btn" onclick="askTopic('Explain OS Deadlock conditions and Banker Algorithm')">💬 Learn</button>
+                            <button class="topic-action-btn" onclick="startQuiz('Operating Systems')">📝 Quiz</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4: AI QUIZ SETUP -->
+            <section class="view-section hidden" id="quiz-view">
+                <div class="view-header">
+                    <h2>📝 Dynamic AI Quiz Generator</h2>
+                    <p>Customize your subject, difficulty, and question format powered by Google Gemini.</p>
+                </div>
+
+                <div class="panel-card quiz-setup-box" id="quiz-setup-card">
+                    <div class="quiz-options-grid">
+                        <div class="quiz-param-group">
+                            <label>Subject</label>
+                            <select id="quiz-subject-select" class="custom-select">
+                                <option value="SQL">SQL</option>
+                                <option value="DBMS">Database Management (DBMS)</option>
+                                <option value="Python">Python</option>
+                                <option value="Java">Java</option>
+                                <option value="C++">C++</option>
+                                <option value="JavaScript">JavaScript</option>
+                                <option value="HTML">HTML</option>
+                                <option value="CSS">CSS</option>
+                                <option value="Operating Systems">Operating Systems</option>
+                                <option value="Computer Networks">Computer Networks</option>
+                                <option value="Compiler Design">Compiler Design</option>
+                                <option value="Data Structures & Algorithms">Data Structures & Algorithms</option>
+                            </select>
+                        </div>
+
+                        <div class="quiz-param-group">
+                            <label>Difficulty</label>
+                            <select id="quiz-diff-select" class="custom-select">
+                                <option value="Beginner">Beginner</option>
+                                <option value="Intermediate" selected>Intermediate</option>
+                                <option value="Advanced">Advanced (Challenging)</option>
+                            </select>
+                        </div>
+
+                        <div class="quiz-param-group">
+                            <label>Number of Questions</label>
+                            <select id="quiz-count-select" class="custom-select">
+                                <option value="5" selected>5 Questions</option>
+                                <option value="10">10 Questions</option>
+                                <option value="15">15 Questions</option>
+                                <option value="20">20 Questions</option>
+                            </select>
+                        </div>
+
+                        <div class="quiz-param-group">
+                            <label>Question Type</label>
+                            <select id="quiz-type-select" class="custom-select">
+                                <option value="MCQ" selected>Multiple Choice (MCQ)</option>
+                                <option value="True/False">True / False</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Weak Topic Targeted Practice Toggle -->
+                    <div class="weak-toggle-box" id="quiz-weak-toggle-container" style="display: none;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="quiz-focus-weak" checked>
+                            <span>🎯 Specially target my detected weak topics:</span>
+                        </label>
+                        <div id="quiz-weak-topic-tags" style="margin-top: 6px;"></div>
+                    </div>
+
+                    <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button class="login-btn" style="flex: 1; min-width: 200px;" onclick="QuizController.startQuizFromSetup()">
+                            🚀 Generate & Start AI Quiz
+                        </button>
+                    </div>
+
+                    <!-- Loading Indicator -->
+                    <div id="quiz-loading-indicator" class="hidden" style="margin-top: 20px; text-align: center;">
+                        <div class="typing-indicator" style="margin: 0 auto 10px;"><span></span><span></span><span></span></div>
+                        <p style="color: #93c5fd; font-weight: 500;">Generating structured quiz questions with Gemini Flash...</p>
+                    </div>
+                </div>
+
+                <!-- Quick Static Topic Buttons Fallback -->
+                <div class="panel-card" style="margin-top: 20px;">
+                    <h3>⚡ Instant Static Quizzes (Offline Fallback)</h3>
+                    <p class="muted" style="margin: 8px 0 16px;">Jump directly into a curated question set without delay:</p>
+                    <div class="quick-quiz-buttons-grid">
+                        <button class="topic-btn" onclick="startQuiz('SQL')">📊 SQL</button>
+                        <button class="topic-btn" onclick="startQuiz('DBMS')">🗄️ DBMS</button>
+                        <button class="topic-btn" onclick="startQuiz('Operating Systems')">🖥️ OS</button>
+                        <button class="topic-btn" onclick="startQuiz('Python')">🐍 Python</button>
+                        <button class="topic-btn" onclick="startQuiz('Java')">☕ Java</button>
+                        <button class="topic-btn" onclick="startQuiz('Data Structures & Algorithms')">🌲 DSA</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4B: ACTIVE QUIZ VIEW -->
+            <section class="view-section hidden" id="active-quiz-view">
+                <div class="active-quiz-top">
+                    <div>
+                        <h2>Quiz: <span id="quiz-title">SQL</span></h2>
+                        <span class="subtopic-badge" id="quiz-topic-badge">General</span>
+                    </div>
+                    <button class="back-btn" onclick="switchView('quiz')">✕ Exit Quiz</button>
+                </div>
+
+                <!-- Live Progress Bar -->
+                <div class="progress-bar-bg" style="margin: 12px 0 20px;">
+                    <div class="progress-bar-fill" id="quiz-active-bar" style="width: 0%;"></div>
+                </div>
+
+                <!-- Question Card -->
+                <div class="panel-card" id="quiz-container">
+                    <h3 id="question-text" class="quiz-question-heading">Loading question...</h3>
+                    <div id="options-container" class="quiz-options-wrapper">
+                        <!-- Options injected via quiz.js -->
+                    </div>
+
+                    <div class="quiz-footer-row">
+                        <span id="quiz-progress">Question 1 of 5</span>
+                        <button id="next-question-btn" class="login-btn" style="width: auto; padding: 10px 24px; display: none;" onclick="nextQuestion()">
+                            Next Question →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Detailed Quiz Result Screen -->
+                <div class="panel-card hidden" id="quiz-result-container">
+                    <div class="result-header">
+                        <h3>🎉 Quiz Completed!</h3>
+                        <div class="result-score-circle">
+                            <span id="quiz-score-val">0 / 0</span>
+                        </div>
+                        <div class="result-meta-row">
+                            <span>Accuracy: <strong id="quiz-percent-val">0%</strong></span> •
+                            <span>Time Taken: <strong id="quiz-time-val">0s</strong></span>
+                        </div>
+                        <div id="quiz-summary-counts" style="margin-top: 10px;"></div>
+                    </div>
+
+                    <!-- Strong & Weak Topics Breakdown -->
+                    <div class="result-breakdown-grid">
+                        <div class="result-topic-box strong-box">
+                            <h4>✓ Strong Areas Mastered</h4>
+                            <ul id="quiz-strong-topics-list"></ul>
+                        </div>
+                        <div class="result-topic-box weak-box">
+                            <h4>⚠ Weak Areas Detected</h4>
+                            <ul id="quiz-weak-topics-list"></ul>
+                        </div>
+                    </div>
+
+                    <!-- AI Coach Recommendation for this result -->
+                    <div class="coach-tip-box" id="quiz-ai-recommendation">
+                        Loading AI recommendation...
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="result-actions-grid">
+                        <button class="login-btn" onclick="QuizController.startQuizFromSetup()">🔄 Retry Quiz</button>
+                        <button class="login-btn secondary" onclick="switchView('quiz')">📝 New Quiz</button>
+                        <button class="login-btn secondary" id="quiz-study-weak-btn">📚 Study Weak Topics</button>
+                        <button class="login-btn secondary" id="quiz-create-fc-btn">🧠 Create Flashcards</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 5: MY NOTES -->
+            <section class="view-section hidden" id="notes-view">
+                <div class="view-header-flex">
+                    <div>
+                        <h2>📄 My Study Notes</h2>
+                        <p>Create, organize, and enhance your notes with Gemini AI summarization and quiz generation.</p>
+                    </div>
+                    <div class="notes-header-actions">
+                        <button class="login-btn" style="width: auto; padding: 10px 18px;" onclick="NotesView.openNoteModal()">+ Create Note</button>
+                        <label class="import-file-btn" title="Import a .txt or markdown file">
+                            📁 Import .txt
+                            <input type="file" accept=".txt,.md" style="display: none;" onchange="NotesView.importTextFile(event)">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Notes Filter Bar -->
+                <div class="notes-filter-row">
+                    <input type="text" id="notes-search-input" placeholder="🔍 Search notes by title or keyword..." class="notes-search-box">
+                    <select id="notes-subject-filter" class="custom-select" style="max-width: 200px;">
+                        <option value="All">All Subjects</option>
+                        <option value="SQL">SQL</option>
+                        <option value="DBMS">DBMS</option>
+                        <option value="Python">Python</option>
+                        <option value="Java">Java</option>
+                        <option value="Operating Systems">Operating Systems</option>
+                        <option value="General">General</option>
+                    </select>
+                </div>
+
+                <!-- Notes Grid Container -->
+                <div class="notes-cards-grid" id="notes-cards-list">
+                    <!-- Injected via notes.js -->
+                </div>
+            </section>
+
+            <!-- SECTION 6: FLASHCARDS -->
+            <section class="view-section hidden" id="flashcards-view">
+                <div class="view-header-flex">
+                    <div>
+                        <h2>🧠 Spaced-Repetition Flashcards</h2>
+                        <p>Review key concepts. Cards rated "Difficult" reappear sooner; "Easy" cards are spaced further.</p>
+                    </div>
+                    <div class="flashcards-actions-bar">
+                        <select id="fc-deck-filter" class="custom-select" style="width: auto;">
+                            <option value="All">All Decks</option>
+                            <option value="SQL">SQL</option>
+                            <option value="Operating Systems">Operating Systems</option>
+                            <option value="Data Structures & Algorithms">DSA</option>
+                        </select>
+                        <button class="login-btn" style="width: auto; padding: 10px 18px;" onclick="FlashcardsView.openCreateModal()">+ Add Card</button>
+                    </div>
+                </div>
+
+                <!-- 3D Flip Card Scene -->
+                <div class="flashcard-scene">
+                    <div class="flashcard-3d" id="active-flip-card" onclick="FlashcardsView.flipCard()">
+                        <div class="card-face card-front">
+                            <div class="card-badge-row">
+                                <span class="tag-sub" id="fc-topic-tag">SQL</span>
+                                <span class="tag-counter"><span id="fc-current-num">1</span> / <span id="fc-total-count">3</span></span>
+                            </div>
+                            <div class="card-content-wrap">
+                                <h3 id="fc-front-text">What is the difference between WHERE and HAVING in SQL?</h3>
+                            </div>
+                            <div class="card-tap-hint">💡 Tap or click card to flip answer ↻</div>
+                        </div>
+
+                        <div class="card-face card-back">
+                            <div class="card-badge-row">
+                                <span class="tag-sub">Answer</span>
+                                <span class="tag-diff" id="fc-diff-tag">Medium</span>
+                            </div>
+                            <div class="card-content-wrap">
+                                <p id="fc-back-text">WHERE filters rows before aggregation; HAVING filters grouped rows after aggregation.</p>
+                            </div>
+                            <div class="card-tap-hint">↻ Tap to flip back to question</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rating & Navigation Controls -->
+                <div class="fc-controls-bar">
+                    <button class="fc-nav-btn" onclick="FlashcardsView.prevCard()">← Prev</button>
+
+                    <div class="fc-rating-buttons">
+                        <button class="rate-btn hard" onclick="FlashcardsView.rateCurrentCard('hard')" title="Review tomorrow">🔴 Difficult (1d)</button>
+                        <button class="rate-btn med" onclick="FlashcardsView.rateCurrentCard('medium')" title="Review in 2 days">🟡 Medium (2d)</button>
+                        <button class="rate-btn easy" onclick="FlashcardsView.rateCurrentCard('easy')" title="Review in 4 days">🟢 Easy (4d)</button>
+                    </div>
+
+                    <button class="fc-nav-btn" onclick="FlashcardsView.nextCard()">Next →</button>
+                </div>
+            </section>
+
+            <!-- SECTION 7: STUDY PLANNER -->
+            <section class="view-section hidden" id="planner-view">
+                <div class="view-header-flex">
+                    <div>
+                        <h2>📅 AI Study Planner</h2>
+                        <p>Dynamic 7-day timetable tailored to your upcoming exams and weak areas.</p>
+                    </div>
+                    <div class="planner-header-buttons">
+                        <button class="login-btn" id="planner-generate-btn" style="width: auto; padding: 10px 18px;" onclick="PlannerView.generateAIPlan()">🤖 Generate AI Plan</button>
+                        <button class="login-btn secondary" style="width: auto; padding: 10px 18px;" onclick="PlannerView.addNewTaskPrompt()">+ Add Task</button>
+                    </div>
+                </div>
+
+                <!-- 7 Day Tabs -->
+                <div class="planner-day-tabs" id="planner-day-tabs"></div>
+
+                <!-- Daily Theme Banner -->
+                <div class="theme-banner" id="planner-theme-display">
+                    <strong>Focus Theme:</strong> Loading schedule...
+                </div>
+
+                <!-- Tasks List -->
+                <div class="planner-tasks-container" id="planner-tasks-list">
+                    <!-- Injected via planner.js -->
+                </div>
+            </section>
+
+            <!-- SECTION 8: FOCUS MODE -->
+            <section class="view-section hidden" id="focus-view">
+                <div class="view-header">
+                    <h2>⏱️ Focus Mode</h2>
+                    <p>Deep work intervals with scientifically proven Pomodoro cycles. Completed sessions award study XP!</p>
+                </div>
+
+                <div class="focus-card-wrapper">
+                    <!-- Focus Mode Toggle Tabs -->
+                    <div class="focus-modes-row">
+                        <button class="focus-mode-btn active" data-mode="pomodoro">25/5 Pomodoro</button>
+                        <button class="focus-mode-btn" data-mode="deepwork">50/10 Deep Work</button>
+                        <button class="focus-mode-btn" data-mode="break">Short Break</button>
+                        <button class="focus-mode-btn" data-mode="custom">Custom</button>
+                    </div>
+
+                    <!-- Circular Progress Timer -->
+                    <div class="focus-clock-container">
+                        <svg class="focus-svg" width="220" height="220" viewBox="0 0 220 220">
+                            <circle class="focus-circle-bg" cx="110" cy="110" r="90"></circle>
+                            <circle class="focus-circle-progress" id="focus-progress-circle" cx="110" cy="110" r="90"></circle>
+                        </svg>
+                        <div class="focus-clock-inner">
+                            <div class="clock-display" id="focus-clock-time">25:00</div>
+                            <div class="clock-mode-label" id="focus-mode-label">Pomodoro (25m)</div>
+                        </div>
+                    </div>
+
+                    <!-- Timer Controls -->
+                    <div class="focus-actions-row">
+                        <button class="login-btn focus-action-btn" id="focus-start-btn" onclick="FocusTimer.startTimer()">▶ Start Focus</button>
+                        <button class="login-btn focus-action-btn secondary" id="focus-pause-btn" style="display: none;" onclick="FocusTimer.pauseTimer()">⏸ Pause</button>
+                        <button class="login-btn focus-action-btn secondary" onclick="FocusTimer.resetTimer()">🔄 Reset</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 9: PROGRESS ANALYTICS -->
+            <section class="view-section hidden" id="progress-view">
+                <div class="view-header">
+                    <h2>📊 Learning Progress & Analytics</h2>
+                    <p>Calculated in real-time from your quiz history, study time, and active topics.</p>
+                </div>
+
+                <!-- Top Metric Stats -->
+                <div class="dash-stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-meta">
+                            <div class="stat-value" id="analytics-accuracy-val">0%</div>
+                            <div class="stat-label">Quiz Accuracy</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-meta">
+                            <div class="stat-value" id="analytics-study-time-val">0m</div>
+                            <div class="stat-label">Study Time</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📝</div>
+                        <div class="stat-meta">
+                            <div class="stat-value" id="analytics-quizzes-val">0</div>
+                            <div class="stat-label">Quizzes Taken</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-meta">
+                            <div class="stat-value" id="analytics-xp-val">0 XP</div>
+                            <div class="stat-label" id="analytics-level-val">Level 1</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subject Breakdown + Strong/Weak Topics -->
+                <div class="dash-content-row" style="margin-top: 20px;">
+                    <div class="panel-card flex-1">
+                        <h3>📈 Subject Mastery Breakdown</h3>
+                        <div class="progress-bars-container" id="analytics-subject-list" style="margin-top: 15px;"></div>
+                    </div>
+
+                    <div class="panel-card flex-1">
+                        <h3>🔍 Concept Strengths & Weaknesses</h3>
+                        <div style="margin-top: 15px;">
+                            <h4 style="color: #4ade80; font-size: 14px; margin-bottom: 8px;">Strong Subtopics (≥75% Accuracy)</h4>
+                            <div class="chips-flex" id="analytics-strong-topics"></div>
+
+                            <h4 style="color: #f87171; font-size: 14px; margin: 16px 0 8px;">Weak Subtopics (&lt;65% Accuracy)</h4>
+                            <div class="chips-flex" id="analytics-weak-topics"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Badges & Gamification Showcase -->
+                <div class="panel-card" style="margin-top: 20px;">
+                    <h3>🏅 Badges & Achievements</h3>
+                    <div class="badges-grid" id="analytics-badges-grid" style="margin-top: 15px;"></div>
+                </div>
+
+                <!-- Quiz History Table -->
+                <div class="panel-card" style="margin-top: 20px;">
+                    <h3>📜 Recent Quiz History</h3>
+                    <div class="table-responsive" style="margin-top: 15px;">
+                        <table class="analytics-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Subject</th>
+                                    <th>Difficulty</th>
+                                    <th>Score</th>
+                                    <th>Accuracy</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analytics-history-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 10: SETTINGS -->
+            <section class="view-section hidden" id="settings-view">
+                <div class="view-header">
+                    <h2>⚙️ Settings & Learning Profile</h2>
+                    <p>Configure your target exams, study budgets, and difficulty preferences.</p>
+                </div>
+
+                <div class="panel-card" style="max-width: 600px; margin-top: 20px;">
+                    <h3>Profile Preferences</h3>
+                    <p class="muted" style="margin: 8px 0 18px;">Customize your AI Study Buddy experience:</p>
+                    <button class="login-btn" style="width: auto; padding: 10px 22px;" onclick="openEditProfile()">
+                        ✏️ Edit Learning Profile
+                    </button>
+
+                    <div class="profile-info-summary" style="margin-top: 24px;">
+                        <p><strong>Username:</strong> <span id="settings-username-display">Admin</span></p>
+                        <p><strong>Target Exam:</strong> <span id="settings-exam-display">GATE / CS Semester Exams</span></p>
+                        <p><strong>Daily Study Goal:</strong> <span id="settings-goal-display">120 minutes</span></p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- RIGHT PANEL (Dynamic Widgets) -->
+        <aside class="right-panel">
+            <!-- Widget 1: Live Study Streak -->
+            <div class="panel-card widget-card">
+                <div class="widget-header">
+                    <span class="widget-icon">🔥</span>
+                    <h4>Live Study Streak</h4>
+                </div>
+                <div class="widget-value-large" id="right-streak-count">3 Days</div>
+                <p class="muted">Study today to maintain your daily streak!</p>
+            </div>
+
+            <!-- Widget 2: Daily Study Goal -->
+            <div class="panel-card widget-card">
+                <div class="widget-header">
+                    <span class="widget-icon">🎯</span>
+                    <h4>Daily Study Budget</h4>
+                </div>
+                <div class="progress-bar-bg" style="margin: 10px 0 6px;">
+                    <div class="progress-bar-fill" id="right-goal-bar" style="width: 45%;"></div>
+                </div>
+                <div class="widget-meta-row">
+                    <span id="right-today-minutes">45 mins</span>
+                    <span id="right-goal-text">45% of daily goal</span>
+                </div>
+            </div>
+
+            <!-- Widget 3: Level & XP Badge -->
+            <div class="panel-card widget-card">
+                <div class="widget-header">
+                    <span class="widget-icon">🏆</span>
+                    <h4>Academic Standing</h4>
+                </div>
+                <div class="widget-badge-pill" id="right-xp-badge">Lvl 1 • 150 XP</div>
+                <p class="muted" style="margin-top: 8px;">Earn +50 XP per quiz and +30 XP per completed task.</p>
+            </div>
+
+            <!-- Widget 4: Quick Launch -->
+            <div class="panel-card widget-card">
+                <h4>⚡ Fast Actions</h4>
+                <div class="quick-action-links">
+                    <button class="quick-btn" onclick="switchView('focus')">⏱️ Launch Pomodoro</button>
+                    <button class="quick-btn" onclick="switchView('quiz')">📝 Start Quick Quiz</button>
+                    <button class="quick-btn" onclick="switchView('notes')">📄 Open Study Notes</button>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- MODAL 1: EDIT PROFILE -->
+    <div class="modal-overlay hidden" id="edit-profile-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Edit Learning Profile</h2>
+                <button class="modal-close" onclick="closeEditProfile()" aria-label="Close modal">✕</button>
+            </div>
+            <form id="edit-profile-form">
+                <div class="input-group">
+                    <label>Full Name / Username</label>
+                    <input type="text" id="edit-name" placeholder="Enter your name" required>
+                </div>
+                <div class="input-group">
+                    <label>Email / Role</label>
+                    <input type="email" id="edit-email" placeholder="student@university.edu" required>
+                </div>
+                <div class="input-group">
+                    <label>Learning Level</label>
+                    <select id="edit-level" class="custom-select">
+                        <option value="Beginner">Beginner (Foundations)</option>
+                        <option value="Intermediate" selected>Intermediate (Core CS)</option>
+                        <option value="Advanced">Advanced (Interview & GATE)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Target Exam / Goal</label>
+                    <input type="text" id="edit-exam" placeholder="e.g. GATE CS, Semester Finals, FAANG Prep">
+                </div>
+                <div class="input-group">
+                    <label>Daily Study Goal (Minutes)</label>
+                    <input type="number" id="edit-goal" min="15" max="600" value="120">
+                </div>
+                <button type="submit" class="save-btn">Save Profile Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: EDIT / CREATE NOTE -->
+    <div class="modal-overlay hidden" id="note-edit-modal">
+        <div class="modal-card" style="max-width: 550px;">
+            <div class="modal-header">
+                <h2>Study Note</h2>
+                <button class="modal-close" onclick="NotesView.closeNoteModal()" aria-label="Close modal">✕</button>
+            </div>
+            <div class="input-group">
+                <label>Title</label>
+                <input type="text" id="note-modal-title" placeholder="e.g. SQL Indexing Internal Mechanisms">
+            </div>
+            <div class="input-group">
+                <label>Subject</label>
+                <select id="note-modal-subject" class="custom-select">
+                    <option value="SQL">SQL</option>
+                    <option value="DBMS">DBMS</option>
+                    <option value="Python">Python</option>
+                    <option value="Java">Java</option>
+                    <option value="Operating Systems">Operating Systems</option>
+                    <option value="Data Structures & Algorithms">DSA</option>
+                    <option value="Computer Networks">Computer Networks</option>
+                    <option value="General">General</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Content (Markdown supported)</label>
+                <textarea id="note-modal-content" rows="8" class="custom-textarea" placeholder="Type or paste your study notes here..."></textarea>
+            </div>
+            <button type="button" class="save-btn" onclick="NotesView.saveCurrentNote()">Save Note</button>
+        </div>
+    </div>
+
+    <!-- MODAL 3: NOTE AI TOOLS -->
+    <div class="modal-overlay hidden" id="note-ai-modal">
+        <div class="modal-card" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>🤖 AI Assistant for Note</h2>
+                <button class="modal-close" onclick="NotesView.closeAIToolsModal()" aria-label="Close modal">✕</button>
+            </div>
+            <p class="muted" style="margin-bottom: 15px;">Target: <strong id="note-ai-target-title" style="color: #93c5fd;">Note</strong></p>
+
+            <div class="note-ai-btn-row">
+                <button class="ai-pill-btn" onclick="NotesView.runAIAction('summarize')">📑 Summarize</button>
+                <button class="ai-pill-btn" onclick="NotesView.runAIAction('concepts')">💡 Key Concepts</button>
+                <button class="ai-pill-btn" onclick="NotesView.runAIAction('questions')">❓ Exam Questions</button>
+                <button class="ai-pill-btn" onclick="NotesView.runAIAction('flashcards')">🧠 Make Flashcards</button>
+                <button class="ai-pill-btn" onclick="NotesView.runAIAction('quiz')">📝 Generate Quiz</button>
+            </div>
+
+            <div class="note-ai-output-box" id="note-ai-output">
+                <p class="muted">Select an AI action above to analyze this note.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: CREATE FLASHCARD -->
+    <div class="modal-overlay hidden" id="fc-create-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Create Flashcard</h2>
+                <button class="modal-close" onclick="FlashcardsView.closeCreateModal()" aria-label="Close modal">✕</button>
+            </div>
+            <div class="input-group">
+                <label>Front (Question / Prompt)</label>
+                <input type="text" id="new-fc-front" placeholder="e.g. What is the time complexity of QuickSort average vs worst case?">
+            </div>
+            <div class="input-group">
+                <label>Back (Answer)</label>
+                <textarea id="new-fc-back" rows="4" class="custom-textarea" placeholder="e.g. Average: O(n log n), Worst-case: O(n^2) with poor pivot selection."></textarea>
+            </div>
+            <div class="input-group">
+                <label>Subject</label>
+                <select id="new-fc-subject" class="custom-select">
+                    <option value="SQL">SQL</option>
+                    <option value="DBMS">DBMS</option>
+                    <option value="Python">Python</option>
+                    <option value="Java">Java</option>
+                    <option value="Operating Systems">Operating Systems</option>
+                    <option value="Data Structures & Algorithms">DSA</option>
+                    <option value="General">General</option>
+                </select>
+            </div>
+            <button type="button" class="save-btn" onclick="FlashcardsView.saveNewCard()">Save Flashcard</button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT MODULES -->
+    <script src="js/storage.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/tutor.js"></script>
+    <script src="js/quiz.js"></script>
+    <script src="js/planner.js"></script>
+    <script src="js/notes.js"></script>
+    <script src="js/flashcards.js"></script>
+    <script src="js/focus.js"></script>
+    <script src="js/progress.js"></script>
+    <script src="bt.js"></script>
+
+</body>
+</html>
